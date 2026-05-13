@@ -29,7 +29,7 @@ Inicializando as matrizes de pesos em cada treinamento com valores aleatórios e
 
 ### 2. Para os dois treinamentos acima com maiores números de épocas, trace os respectivos gráficos dos valores de erro quadrático médio (EQM) em função de cada época de treinamento.
 
-![Gráfico EQM](grafico_eqm.png)
+![Gráfico EQM](Atividade%2003%20-%20PMC/grafico_eqm.png)
 
 Os gráficos também estão disponíveis no notebook `PMC.ipynb`.
 
