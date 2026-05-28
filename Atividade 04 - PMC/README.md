@@ -20,8 +20,8 @@ As matrizes de pesos foram inicializadas com valores aleatórios entre 0 e 1, ut
 
 | Algoritmo | Erro Quadrático Médio (EQM) | Número de Épocas | Tempo de Processamento (s) |
 |:---|:---:|:---:|:---:|
-| Backpropagation Padrão | 0.017217 | 1038 | 3.4276 |
-| Backpropagation c/ Momentum | 0.019157 | 69 | 0.2401 |
+| Backpropagation Padrão | 0.017217 | 1038 | 3.4010 |
+| Backpropagation c/ Momentum | 0.019157 | 69 | 0.2732 |
 
 ### 3. Gráficos do Erro Quadrático Médio (EQM)
 
