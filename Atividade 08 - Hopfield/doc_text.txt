@@ -1,0 +1,76 @@
+ 	Centro Federal de Educação Tecnológica de Minas GeraisCampus VIII – VarginhaBacharelado em Sistemas de Informação
+DisciplinaLab. Inteligência Artificial	TRABALHO	ProfessorLázaro Eduardo da Silva	Valor100%	Nota
+Data:28/05/2026	Aluno(a):	 
+
+
+Um sistema de transmissão de imagens, representadas em 45 bits, envia imagens através de um link de comunicação que são codificadas pelo sistema de transmissão. Ao chegar ao sistema de recepção a imagem é novamente decodificada visando a recuperação fiel da imagem previamente enviada. As quatro imagens (informações) que estão sendo transmitidas são representadas pelas seguintes figuras: 
+
+
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+
+           
+
+Entretanto, durante a transmissão ao longo do link de comunicação as informações são corrompidas por ruídos que deixam as imagens incompletas ou distorcidas após a sua decodificação pelo sistema de recepção.
+Portanto, implementar uma memória associativa, através de uma rede de Hopfield com 45 neurônios, para armazenar e recuperar os padrões definidos acima a partir da apresentação de versões distorcidas ou incompletas das imagens, as quais estão sendo produzidas pelo sistema de recepção.
+
+Considere que:
+- Pixel branco é codificado com valor -1.
+- Pixel escuro é codificado com valor +1.
+Cerca de 20% dos pixels são corrompidos aleatoriamente durante a transmissão, ou seja, alguns que valiam -1 passam a valer +1 e vice-versa.
+
+
+
+Após a implementação da rede, faça as seguintes atividades:
+
+Simule 12 situações de transmissão (3 para cada padrão), conforme apresentado abaixo.
+Mostre em cada situação a imagem distorcida e a imagem limpa recuperada.
+Explique o que acontece quando aumentamos excessivamente o nível de ruído.
+
+
+
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+
+
+Imagem TransmitidaImagem Distorcida        Imagem Limpa
+           (livre de ruído) (com ruído)   (sem ruído)
+
+
+
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 
+
+
+Imagem TransmitidaImagem DistorcidaImagem Limpa
+
+
+
+
+Topologia da Rede de Hopfield:
+- A matriz de pesos W é obtida pela regra do produto externo.
+- A função de ativação é a Tangente Hiperbólica com  muito grande.
+
+
+
