@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratório de IA I - Dashboard Interativo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-purple: #a78bfa;
+            --accent-orange: #fb923c;
+            --accent-red: #f87171;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.2);
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(167, 139, 250, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        /* Layout Structure */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 280px;
+            background-color: rgba(15, 23, 42, 0.95);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+        }
+
+        .logo-section {
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .logo-title {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .menu-items {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 4px;
+        }
+
+        /* Custom Scrollbar for Sidebar and main panels */
+        .menu-items::-webkit-scrollbar,
+        .main-content::-webkit-scrollbar,
+        .simulation-card::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .menu-items::-webkit-scrollbar-thumb,
+        .main-content::-webkit-scrollbar-thumb,
+        .simulation-card::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .menu-item:hover {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .menu-item.active {
+            color: var(--accent-blue);
+            background-color: rgba(56, 189, 248, 0.08);
+            border-color: rgba(56, 189, 248, 0.2);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.05);
+        }
+
+        .menu-item-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 12px;
+        }
+
+        .menu-item.active .menu-item-number {
+            background-color: rgba(56, 189, 248, 0.2);
+            color: var(--text-main);
+        }
+
+        .sidebar-footer {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            margin-left: 280px;
+            flex-grow: 1;
+            padding: 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .header-dashboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .student-badge {
+            background-color: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .student-avatar {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        /* Grid Layout for details and simulators */
+        .grid-panel {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 32px;
+        }
+
+        @media (max-width: 1100px) {
+            .grid-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background-color: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: border-color var(--transition-speed);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* Tabs contents styling */
+        .tab-panel {
+            display: none;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .tab-panel.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Textual Content Formatting */
+        .markdown-content h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 20px 0 10px 0;
+            color: var(--accent-blue);
+        }
+
+        .markdown-content p {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .markdown-content ul {
+            list-style-position: inside;
+            margin-bottom: 16px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .markdown-content li {
+            margin-bottom: 6px;
+        }
+
+        /* Code/Math blocks */
+        .formula-box {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: rgba(15, 23, 42, 0.5);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            margin: 16px 0;
+            color: var(--text-main);
+            overflow-x: auto;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Results table */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .results-table th, .results-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .results-table th {
+            background-color: rgba(255, 255, 255, 0.02);
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .results-table td {
+            color: var(--text-muted);
+        }
+
+        /* Simulation Card Layout */
+        .simulation-card {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            min-height: 400px;
+        }
+
+        .simulator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .simulator-title {
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-purple);
+        }
+
+        /* Common simulation elements */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .control-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-slider {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            border-radius: 3px;
+            -webkit-appearance: none;
+            accent-color: var(--accent-blue);
+        }
+
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent-blue);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: var(--bg-primary);
+            border: none;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+        }
+
+        /* ------------------ Specific Simulator Widgets ------------------ */
+
+        /* Perceptron widget */
+        .perceptron-widget {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        .custom-checkbox {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all var(--transition-speed);
+            font-size: 13px;
+        }
+
+        .custom-checkbox.checked {
+            border-color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.08);
+            color: var(--accent-blue);
+        }
+
+        .badge-output {
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 16px;
+            border: 1px solid transparent;
+            transition: all var(--transition-speed);
+        }
+
+        .badge-output.positive {
+            background: rgba(52, 211, 153, 0.08);
+            color: var(--accent-green);
+            border-color: rgba(52, 211, 153, 0.2);
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.1);
+        }
+
+        .badge-output.negative {
+            background: rgba(248, 113, 113, 0.08);
+            color: var(--accent-red);
+            border-color: rgba(248, 113, 113, 0.2);
+            box-shadow: 0 0 20px rgba(248, 113, 113, 0.1);
+        }
+
+        /* Adaline widget */
+        .adaline-canvas-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .adaline-target {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px var(--accent-green);
+        }
+
+        .adaline-descending-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px var(--accent-blue);
+            display: none;
+        }
+
+        /* PMC/MLP SVG Widget */
+        .pmc-svg {
+            width: 100%;
+            height: 280px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* RBF Canvas widget */
+        .rbf-canvas-container {
+            width: 100%;
+            height: 250px;
+            background: #0f172a;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rbf-center {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .rbf-center-1 {
+            background-color: var(--accent-blue);
+            box-shadow: 0 0 12px var(--accent-blue);
+        }
+
+        .rbf-center-2 {
+            background-color: var(--accent-purple);
+            box-shadow: 0 0 12px var(--accent-purple);
+        }
+
+        /* Hopfield grid widget */
+        .hopfield-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .hopfield-digit-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .hopfield-grid-wrapper {
+            display: flex;
+            justify-content: center;
+        }
+
+        .hopfield-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 24px);
+            grid-template-rows: repeat(9, 24px);
+            gap: 4px;
+            background: rgba(255,255,255,0.01);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .hopfield-cell {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .hopfield-cell:hover {
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .hopfield-cell.active {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+            border-color: transparent;
+        }
+
+        .hopfield-actions {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 12px;
+        }
+
+        /* Kohonen/SOM grid */
+        .som-grid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .som-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            background: rgba(15,23,42,0.4);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .som-neuron {
+            aspect-ratio: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            font-size: 11px;
+            position: relative;
+        }
+
+        .som-neuron:hover {
+            border-color: var(--accent-blue);
+            transform: scale(1.05);
+        }
+
+        .som-neuron.active {
+            border-color: var(--accent-green);
+            background: rgba(52, 211, 153, 0.08);
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.1);
+        }
+
+        .som-neuron-idx {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+
+        .som-neuron-class {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .som-class-A { color: var(--accent-blue); }
+        .som-class-B { color: var(--accent-purple); }
+        .som-class-C { color: var(--accent-orange); }
+
+        .som-info-card {
+            background-color: rgba(15,23,42,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            border: 1px solid var(--border-color);
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .som-info-card strong {
+            color: var(--text-main);
+        }
+
+        /* LVQ1 Profiles */
+        .lvq-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .lvq-classes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .lvq-class-card {
+            background: rgba(255,255,255,0.01);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            transition: all var(--transition-speed);
+        }
+
+        .lvq-class-card.active {
+            background: rgba(56, 189, 248, 0.03);
+            border-color: var(--accent-blue);
+        }
+
+        .lvq-class-name {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lvq-class-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot-1 { background-color: #1f77b4; }
+        .dot-2 { background-color: #ff7f0e; }
+        .dot-3 { background-color: #2ca02c; }
+        .dot-4 { background-color: #d62728; }
+
+        /* ART1 Clustered result list */
+        .art1-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .art1-results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .art1-class-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .art1-item-header {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--accent-blue);
+        }
+
+        .art1-item-members {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .art1-item-template {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-main);
+            background: rgba(0,0,0,0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Navigation Sidebar -->
+    <div class="sidebar">
+        <div class="logo-section">
+            <div class="logo-title">Lab. Inteligência Artificial I</div>
+            <div class="logo-subtitle">CEFET-MG Varginha</div>
+        </div>
+        <ul class="menu-items">
+            <li class="menu-item active" onclick="switchTab('tab-perceptron', this)">
+                <span class="menu-item-number">01</span> Perceptron
+            </li>
+            <li class="menu-item" onclick="switchTab('tab-adaline', this)">
+                <span class="menu-item-number">02</span> Adaline
+            </li>
+            <li class="menu-item" onclick="switchTab('tab-pmc', this)">
+                <span class="menu-item-number">03-05</span> PMC (MLP)
+            </li>
+            <li class="menu-item" onclick="switchTab('tab-rbf', this)">
+                <span class="menu-item-number">06-07</span> RBF
+            </li>
+            <li class="menu-item" onclick="switchTab('tab-hopfield', this)">
+                <span class="menu-item-number">08</span> Hopfield
+            </li>
+            <li class="menu-item" onclick="switchTab('tab-kohonen', this)">
+                <span class="menu-item-number">09</span> Kohonen SOM
+            </li>
+            <li class="menu-item" onclick="switchTab('tab-lvq', this)">
+                <span class="menu-item-number">10</span> RNA LVQ-1
+            </li>
+            <li class="menu-item" onclick="switchTab('tab-art', this)">
+                <span class="menu-item-number">11</span> ART-1
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <strong>Professor:</strong><br>
+            Lázaro Eduardo da Silva<br><br>
+            <strong>Disciplina:</strong><br>
+            Laboratório de IA I
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="main-content">
+        <!-- Dashboard Top Header -->
+        <div class="header-dashboard">
+            <div>
+                <h1 style="font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">Painel de Simulações Neurais</h1>
+                <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Exploração visual das redes neurais estudadas no laboratório</p>
+            </div>
+            <div class="student-badge">
+                <span class="student-avatar"></span>
+                <span>Aluno: <strong>Álvaro H. D. Mendes</strong></span>
+            </div>
+        </div>
+
+        <!-- -------------------- TAB: PERCEPTRON -------------------- -->
+        <div id="tab-perceptron" class="tab-panel active">
+            <div class="grid-panel">
+                <div class="glass-card markdown-content">
+                    <h2 class="card-title"><span style="color: var(--accent-blue);">●</span> Atividade 01: Perceptron Simples</h2>
+                    <p class="card-subtitle">Classificação automática da pureza de destilação fracionada de óleo (Classes C1 e C2) utilizando Hebb Supervisionado.</p>
+                    
+                    <h3>Definição do Modelo</h3>
+                    <p>O Perceptron é a unidade básica de decisão linear. Dada uma entrada $X$, calcula-se a soma ponderada de seus elementos ponderados por pesos sinápticos $W$ mais um viés (bias) $w_0$:</p>
+                    <div class="formula-box">v = w₀ + w₁x₁ + w₂x₂ + w₃x₃</div>
+                    <p>A saída da rede $y$ é determinada aplicando a função sinal (limiar rígido):</p>
+                    <div class="formula-box">y = sgn(v) = { +1 se v &ge; 0, -1 se v &lt; 0 }</div>
+                    
+                    <h3>Resultados do Treinamento</h3>
+                    <p>Para Hebb supervisionado com taxa de aprendizado de 0.01, obteve-se os seguintes vetores finais:</p>
+                    <div class="table-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Treino</th>
+                                    <th>Pesos Iniciais [w0, w1, w2, w3]</th>
+                                    <th>Pesos Finais [w0, w1, w2, w3]</th>
+                                    <th>Épocas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>T1</td>
+                                    <td>[0.5987, 0.3745, 0.9507, 0.7320]</td>
+                                    <td>[-1.5613, 0.7959, 1.2585, -0.3734]</td>
+                                    <td>480</td>
+                                </tr>
+                                <tr>
+                                    <td>T2</td>
+                                    <td>[0.2406, 0.1151, 0.6091, 0.1334]</td>
+                                    <td>[-1.5394, 0.7673, 1.2313, -0.3656]</td>
+                                    <td>407</td>
+                                </tr>
+                                <tr>
+                                    <td>T3</td>
+                                    <td>[0.3605, 0.8348, 0.1048, 0.7446]</td>
+                                    <td>[-1.5495, 0.7856, 1.2441, -0.3695]</td>
+                                    <td>421</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="glass-card simulation-card">
+                    <div class="simulator-header">
+                        <div class="simulator-title">Simulador Perceptron</div>
+                    </div>
+                    <div class="perceptron-widget">
+                        <div class="control-group">
+                            <span class="control-label">Pesos Sinápticos (W)</span>
+                            <div>
+                                <label class="control-label">w0 (Bias): <span id="val-p-w0">-1.55</span></label>
+                                <input type="range" class="control-slider" id="p-w0" min="-3" max="3" step="0.01" value="-1.55" oninput="calcPerceptron()">
+                            </div>
+                            <div>
+                                <label class="control-label">w1: <span id="val-p-w1">0.78</span></label>
+                                <input type="range" class="control-slider" id="p-w1" min="-3" max="3" step="0.01" value="0.78" oninput="calcPerceptron()">
+                            </div>
+                            <div>
+                                <label class="control-label">w2: <span id="val-p-w2">1.25</span></label>
+                                <input type="range" class="control-slider" id="p-w2" min="-3" max="3" step="0.01" value="1.25" oninput="calcPerceptron()">
+                            </div>
+                            <div>
+                                <label class="control-label">w3: <span id="val-p-w3">-0.37</span></label>
+                                <input type="range" class="control-slider" id="p-w3" min="-3" max="3" step="0.01" value="-0.37" oninput="calcPerceptron()">
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <span class="control-label">Entradas (x)</span>
+                            <div class="checkbox-container">
+                                <div class="custom-checkbox" id="chk-p-x1" onclick="toggleCheckbox('chk-p-x1'); calcPerceptron()">x1 (pureza 1)</div>
+                                <div class="custom-checkbox" id="chk-p-x2" onclick="toggleCheckbox('chk-p-x2'); calcPerceptron()">x2 (pureza 2)</div>
+                                <div class="custom-checkbox" id="chk-p-x3" onclick="toggleCheckbox('chk-p-x3'); calcPerceptron()">x3 (pureza 3)</div>
+                            </div>
+                        </div>
+
+                        <div id="perceptron-out" class="badge-output negative">
+                            Classe C1 (y = -1)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- -------------------- TAB: ADALINE -------------------- -->
+        <div id="tab-adaline" class="tab-panel">
+            <div class="grid-panel">
+                <div class="glass-card markdown-content">
+                    <h2 class="card-title"><span style="color: var(--accent-purple);">●</span> Atividade 02: Rede ADALINE</h2>
+                    <p class="card-subtitle">Controle de envio automático de ajuste de duas válvulas com algoritmo de Regra Delta de convergência global.</p>
+                    
+                    <h3>Definição do Modelo</h3>
+                    <p>Ao contrário do Perceptron, o ADALINE (Adaptive Linear Neuron) calcula seu erro utilizando o sinal linear contínuo, antes de aplicar o limiar rígido. A Regra Delta minimiza o Erro Quadrático Médio (EQM):</p>
+                    <div class="formula-box">E = &frac12; &sum; (d_k - w^T x_k)&sup2;</div>
+                    <p>A superfície do erro em relação aos pesos forma um hiperparaboloide, possuindo um <strong>único mínimo global</strong>. Portanto, independentemente da inicialização aleatória, os pesos finais convergem exatamente para a mesma configuração ótima.</p>
+                    
+                    <h3>Pesos Finais Obtidos</h3>
+                    <p>Os pesos finais obtidos em todos os treinamentos foram idênticos (criterio de parada de precisão &epsilon; = 10⁻⁶):</p>
+                    <div class="formula-box">W = [-1.8132, 1.3129, 1.6424, -0.4278, -1.1778]</div>
+                </div>
+
+                <div class="glass-card simulation-card">
+                    <div class="simulator-header">
+                        <div class="simulator-title">Mínimo Global & Gradiente</div>
+                    </div>
+                    <p class="control-label">Clique em qualquer local da superfície para iniciar a descida do gradiente rumo ao mínimo global (centro verde):</p>
+                    <div class="adaline-canvas-container" id="adaline-plane" onclick="runAdalineGradient(event)">
+                        <div class="adaline-target"></div>
+                        <div class="adaline-descending-dot" id="adaline-dot"></div>
+                    </div>
+                    <button class="btn btn-outline" onclick="resetAdaline()">Resetar Plano</button>
+                    <div style="font-family:'JetBrains Mono', monospace; font-size:12px; color: var(--text-muted);" id="adaline-info">
+                        Clique para gerar um vetor de pesos inicial!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- -------------------- TAB: PMC -------------------- -->
+        <div id="tab-pmc" class="tab-panel">
+            <div class="grid-panel">
+                <div class="glass-card markdown-content">
+                    <h2 class="card-title"><span style="color: var(--accent-orange);">●</span> Atividades 03, 04, 05: Multicamadas (PMC)</h2>
+                    <p class="card-subtitle">Estimador universal de funções e classificador não-linear usando Backpropagation, Momentum e Time Delay (TDNN).</p>
+                    
+                    <h3>Conceitos Fundamentais</h3>
+                    <ul>
+                        <li><strong>Aproximação Universal:</strong> Redes de múltiplas camadas conseguem criar superfícies de decisão altamente não-lineares, contornando a limitação de separabilidade linear.</li>
+                        <li><strong>Backpropagation:</strong> Propaga o erro da saída de volta para as camadas ocultas, atualizando os pesos por gradiente descendente.</li>
+                        <li><strong>Fator de Momentum (&alpha;):</strong> Adiciona um termo de inércia para acelerar a convergência e evitar oscilações em vales estreitos.</li>
+                        <li><strong>TDNN (Time Delay):</strong> Utiliza uma janela deslizante temporal para prever séries temporais de mercados financeiros.</li>
+                    </ul>
+                </div>
+
+                <div class="glass-card simulation-card">
+                    <div class="simulator-header">
+                        <div class="simulator-title">Visualizador de Fluxo da Rede</div>
+                    </div>
+                    <svg class="pmc-svg" id="pmc-svg">
+                        <!-- Synapses -->
+                        <!-- Layer 0 to 1 -->
+                        <line x1="80" y1="60" x2="200" y2="70" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-0-0" />
+                        <line x1="80" y1="60" x2="200" y2="140" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-0-1" />
+                        <line x1="80" y1="60" x2="200" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-0-2" />
+                        
+                        <line x1="80" y1="140" x2="200" y2="70" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-1-0" />
+                        <line x1="80" y1="140" x2="200" y2="140" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-1-1" />
+                        <line x1="80" y1="140" x2="200" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-1-2" />
+
+                        <line x1="80" y1="220" x2="200" y2="70" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-2-0" />
+                        <line x1="80" y1="220" x2="200" y2="140" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-2-1" />
+                        <line x1="80" y1="220" x2="200" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-2-2" />
+
+                        <!-- Layer 1 to 2 -->
+                        <line x1="200" y1="70" x2="320" y2="140" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-3-0" />
+                        <line x1="200" y1="140" x2="320" y2="140" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-3-1" />
+                        <line x1="200" y1="210" x2="320" y2="140" stroke="rgba(255,255,255,0.08)" stroke-width="2" id="syn-3-2" />
+
+                        <!-- Input Neurons -->
+                        <circle cx="80" cy="60" r="16" fill="var(--bg-secondary)" stroke="var(--accent-blue)" stroke-width="2" />
+                        <circle cx="80" cy="140" r="16" fill="var(--bg-secondary)" stroke="var(--accent-blue)" stroke-width="2" />
+                        <circle cx="80" cy="220" r="16" fill="var(--bg-secondary)" stroke="var(--accent-blue)" stroke-width="2" />
+
+                        <!-- Hidden Neurons -->
+                        <circle cx="200" cy="70" r="16" fill="var(--bg-secondary)" stroke="var(--accent-purple)" stroke-width="2" />
+                        <circle cx="200" cy="140" r="16" fill="var(--bg-secondary)" stroke="var(--accent-purple)" stroke-width="2" />
+                        <circle cx="200" cy="210" r="16" fill="var(--bg-secondary)" stroke="var(--accent-purple)" stroke-width="2" />
+
+                        <!-- Output Neurons -->
+                        <circle cx="320" cy="140" r="16" fill="var(--bg-secondary)" stroke="var(--accent-green)" stroke-width="2" />
+
+                        <!-- Labels -->
+                        <text x="80" y="64" fill="var(--text-main)" font-size="12" text-anchor="middle">x1</text>
+                        <text x="80" y="144" fill="var(--text-main)" font-size="12" text-anchor="middle">x2</text>
+                        <text x="80" y="224" fill="var(--text-main)" font-size="12" text-anchor="middle">x3</text>
+
+                        <text x="200" y="74" fill="var(--text-main)" font-size="12" text-anchor="middle">h1</text>
+                        <text x="200" y="144" fill="var(--text-main)" font-size="12" text-anchor="middle">h2</text>
+                        <text x="200" y="214" fill="var(--text-main)" font-size="12" text-anchor="middle">h3</text>
+
+                        <text x="320" y="144" fill="var(--text-main)" font-size="12" text-anchor="middle">y</text>
+
+                        <!-- Animated pulse element -->
+                        <circle cx="80" cy="60" r="6" fill="var(--accent-blue)" id="pulse" style="display:none;" />
+                    </svg>
+                    <div style="display:flex; gap:12px;">
+                        <button class="btn" onclick="animatePMC('forward')">Propagar (Forward)</button>
+                        <button class="btn btn-outline" onclick="animatePMC('backward')">Retropropagar (Backward)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- -------------------- TAB: RBF -------------------- -->
+        <div id="tab-rbf" class="tab-panel">
+            <div class="grid-panel">
+                <div class="glass-card markdown-content">
+                    <h2 class="card-title"><span style="color: var(--accent-green);">●</span> Atividades 06, 07: Redes RBF</h2>
+                    <p class="card-subtitle">Mapeamento de injeção eletrônica e classificação de radiação nuclear utilizando Funções de Base Radial baseadas em proximidade local.</p>
+                    
+                    <h3>Definição do Modelo</h3>
+                    <p>A arquitetura RBF (Radial Basis Function) utiliza neurônios ocultos com ativações Gaussianas centradas em clusters específicos do espaço. A ativação depende da distância euclidiana da entrada $x$ ao centro do cluster $c_i$:</p>
+                    <div class="formula-box">&phi;_i(x) = exp( - ||x - c_i||&sup2; / (2&sigma;_i&sup2;) )</div>
+                    <p>A camada oculta mapeia a entrada de forma não-linear, enquanto a camada de saída executa uma combinação linear ponderada simples (treinada via Regra Delta).</p>
+                </div>
+
+                <div class="glass-card simulation-card">
+                    <div class="simulator-header">
+                        <div class="simulator-title">Campos Receptivos Locais</div>
+                    </div>
+                    <p class="control-label">Mova o cursor dentro da área abaixo para ver o nível de ativação das duas bases radiais localizadas nos pontos azul e roxo:</p>
+                    <div class="rbf-canvas-container" id="rbf-plane" onmousemove="updateRBF(event)">
+                        <div class="rbf-center rbf-center-1" style="top: 40%; left: 30%;"></div>
+                        <div class="rbf-center rbf-center-2" style="top: 70%; left: 70%;"></div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Ativação Base 1: <span id="rbf-act-1">0%</span></label>
+                        <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+                            <div id="rbf-bar-1" style="height: 100%; width: 0%; background: var(--accent-blue); transition: width 0.1s;"></div>
+                        </div>
+                        <label class="control-label">Ativação Base 2: <span id="rbf-act-2">0%</span></label>
+                        <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+                            <div id="rbf-bar-2" style="height: 100%; width: 0%; background: var(--accent-purple); transition: width 0.1s;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- -------------------- TAB: HOPFIELD -------------------- -->
+        <div id="tab-hopfield" class="tab-panel">
+            <div class="grid-panel">
+                <div class="glass-card markdown-content">
+                    <h2 class="card-title"><span style="color: var(--accent-purple);">●</span> Atividade 08: Memória Associativa de Hopfield</h2>
+                    <p class="card-subtitle">Recuperação de padrões digitais ruidosos de dígitos de 45 bits utilizando dinâmica energética de convergência assíncrona.</p>
+                    
+                    <h3>Teoria e Limitações</h3>
+                    <p>A rede de Hopfield armazena memórias no formato de mínimos locais de energia. A energia global é definida por:</p>
+                    <div class="formula-box">E = - &frac12; &sum; w_ij s_i s_j</div>
+                    <p>Seus pesos são calculados usando a matriz hebbiana:</p>
+                    <div class="formula-box">w_ij = &frac12; &sum; &xi;_i&sup1; &xi;_j&sup1; + &xi;_i&sup2; &xi;_j&sup2; ...</div>
+                    
+                    <p><strong>Bacias de Atração:</strong> Quando um padrão ruidoso é inserido, o sistema executa atualizações assíncronas até "rolar" para o fundo de uma bacia de atração. Se o ruído for alto demais (>25%), ou se as memórias forem estruturalmente próximas (como o Dígito 2 e 3 que diferem por apenas 8 bits), a rede pode cair em <strong>estados espúrios</strong> ou retornar o padrão em negativo.</p>
+                </div>
+
+                <div class="glass-card simulation-card">
+                    <div class="simulator-header">
+                        <div class="simulator-title">Memória de 45 Pixels (9x5)</div>
+                    </div>
+                    <div class="hopfield-layout">
+                        <div class="hopfield-digit-selector">
+                            <button class="btn btn-outline" style="padding: 6px 12px; font-size:12px;" onclick="loadHopfieldDigit(1)">Dígito 1</button>
+                            <button class="btn btn-outline" style="padding: 6px 12px; font-size:12px;" onclick="loadHopfieldDigit(2)">Dígito 2</button>
+                            <button class="btn btn-outline" style="padding: 6px 12px; font-size:12px;" onclick="loadHopfieldDigit(3)">Dígito 3</button>
+                            <button class="btn btn-outline" style="padding: 6px 12px; font-size:12px;" onclick="loadHopfieldDigit(4)">Dígito 4</button>
+                        </div>
+                        
+                        <div class="hopfield-grid-wrapper">
+                            <div class="hopfield-grid" id="hopfield-grid"></div>
+                        </div>
+
+                        <div class="hopfield-actions">
+                            <button class="btn btn-outline" onclick="addHopfieldNoise()">Injetar 20% Ruído</button>
+                            <button class="btn" onclick="recallHopfield()">Recuperar Padrão</button>
+                        </div>
+                        <div style="font-family:'JetBrains Mono', monospace; font-size:11px; text-align:center; color: var(--text-muted);" id="hopfield-status">
+                            Escolha um dígito ou clique nos pixels para desenhar!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- -------------------- TAB: KOHONEN -------------------- -->
+        <div id="tab-kohonen" class="tab-panel">
+            <div class="grid-panel">
+                <div class="glass-card markdown-content">
+                    <h2 class="card-title"><span style="color: var(--accent-blue);">●</span> Atividade 09: Mapa de Kohonen (SOM)</h2>
+                    <p class="card-subtitle">Redução de dimensionalidade espacial e mapeamento topológico bidimensional não-supervisionado.</p>
+                    
+                    <h3>Definição do Modelo</h3>
+                    <p>O Self-Organizing Map (SOM) de Kohonen organiza neurônios em uma grade topológica bidimensional (neste caso, 4x4). No treinamento, o padrão vencedor (BMU - Best Matching Unit) atrai seus pesos e os pesos de seus vizinhos geográficos na grade em direção à entrada:</p>
+                    <div class="formula-box">W_i(t+1) = W_i(t) + &eta;(t)[ x - W_i(t) ]</div>
+                    
+                    <p><strong>Mapeamento das Classes A, B, C:</strong> O SOM conseguiu agrupar o dataset do lab em clusters nítidos na grade 4x4. Neurônios vizinhos representam classes idênticas ou similares.</p>
+                </div>
+
+                <div class="glass-card simulation-card">
+                    <div class="simulator-header">
+                        <div class="simulator-title">Grade Topológica 4x4</div>
+                    </div>
+                    <div class="som-grid-container">
+                        <p class="control-label">Clique nas classes para ver quais neurônios da grade 4x4 foram ativados como vencedores durante as simulações:</p>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="highlightSOMClass('A')">Mostrar Classe A</button>
+                            <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="highlightSOMClass('B')">Mostrar Classe B</button>
+                            <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="highlightSOMClass('C')">Mostrar Classe C</button>
+                        </div>
+                        <div class="som-grid" id="som-grid"></div>
+                        <div class="som-info-card" id="som-info">
+                            Passe o mouse ou clique em um neurônio para inspecionar seu vetor de pesos final!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- -------------------- TAB: LVQ-1 -------------------- -->
+        <div id="tab-lvq" class="tab-panel">
+            <div class="grid-panel">
+                <div class="glass-card markdown-content">
+                    <h2 class="card-title"><span style="color: var(--accent-orange);">●</span> Atividade 10: Rede LVQ-1</h2>
+                    <p class="card-subtitle">Classificação supervisionada de perfis diários de demanda de potência elétrica.</p>
+                    
+                    <h3>Configurações e Resultados</h3>
+                    <p>A Learning Vector Quantization (LVQ-1) utiliza protótipos de classes para definir fronteiras de decisão supervisionadas. Se o protótipo vencedor pertence à classe correta, ele é aproximado do padrão de entrada. Se pertencer à classe incorreta, é repelido.</p>
+                    
+                    <p><strong>Resultados Finais:</strong> Ambos os cenários de inicialização (média vs primeira amostra) convergiram para as mesmas classes exatas nos 8 dias de teste. Os protótipos se posicionam perfeitamente na média das curvas de carga do treinamento.</p>
+                </div>
+
+                <div class="glass-card simulation-card">
+                    <div class="simulator-header">
+                        <div class="simulator-title">Classificação de Perfis</div>
+                    </div>
+                    <div class="lvq-layout">
+                        <p class="control-label">Amostras de Demanda agrupadas em 4 Perfis:</p>
+                        <div class="lvq-classes-grid">
+                            <div class="lvq-class-card" id="lvq-c1">
+                                <div class="lvq-class-name"><span class="lvq-class-dot dot-1"></span>Classe 1: Baixo Regular</div>
+                                <p style="color: var(--text-muted); font-size:11px;">Média: ~1.8 MW. Consumo residencial baixo e constante.</p>
+                            </div>
+                            <div class="lvq-class-card" id="lvq-c2">
+                                <div class="lvq-class-name"><span class="lvq-class-dot dot-2"></span>Classe 2: Pico Meio-Dia</div>
+                                <p style="color: var(--text-muted); font-size:11px;">Média: ~5.4 MW às 10h/11h. Típico comercial.</p>
+                            </div>
+                            <div class="lvq-class-card" id="lvq-c3">
+                                <div class="lvq-class-name"><span class="lvq-class-dot dot-3"></span>Classe 3: Pico Início/Fim</div>
+                                <p style="color: var(--text-muted); font-size:11px;">Média: ~5.1 MW às 12h. Pico no final de turno.</p>
+                            </div>
+                            <div class="lvq-class-card" id="lvq-c4">
+                                <div class="lvq-class-name"><span class="lvq-class-dot dot-4"></span>Classe 4: Industrial Crítico</div>
+                                <p style="color: var(--text-muted); font-size:11px;">Média: ~6.9 MW. Alto consumo constante o dia inteiro.</p>
+                            </div>
+                        </div>
+                        <button class="btn" onclick="testLVQDays()">Simular Classificação de Teste (8 Dias)</button>
+                        <div class="som-info-card" id="lvq-status" style="max-height: 120px; overflow-y: auto;">
+                            Clique acima para classificar as 8 amostras de teste!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- -------------------- TAB: ART-1 -------------------- -->
+        <div id="tab-art" class="tab-panel">
+            <div class="grid-panel">
+                <div class="glass-card markdown-content">
+                    <h2 class="card-title"><span style="color: var(--accent-blue);">●</span> Atividade 11: Rede ART-1</h2>
+                    <p class="card-subtitle">Agrupamento não-supervisionado de status de processos industriais sob limiares variáveis de vigilância.</p>
+                    
+                    <h3>Dilema da Estabilidade-Plasticidade</h3>
+                    <p>A rede ART-1 resolve o dilema de aprender novas informações (plasticidade) sem apagar categorias consolidadas (estabilidade). O grau de vigilância $\rho$ controla o quão rígida é a tolerância a diferenças:</p>
+                    <div class="formula-box">||x &odot; t_J|| / ||x|| &ge; &rho;</div>
+                    <p>Se a similaridade do protótipo vencedor $t_J$ com a entrada $x$ atinge $\rho$, ocorre a <strong>ressonância</strong> (aprendizado). Caso contrário, a categoria é inibida temporariamente, reiniciando a busca. Se nenhuma categoria comprometida passar, cria-se uma nova classe.</p>
+                </div>
+
+                <div class="glass-card simulation-card">
+                    <div class="simulator-header">
+                        <div class="simulator-title">Dinâmica de Vigilância</div>
+                    </div>
+                    <div class="art1-layout">
+                        <div class="control-group">
+                            <label class="control-label">Parâmetro de Vigilância (&rho;): <strong id="art1-rho-val">0.50</strong></label>
+                            <input type="range" class="control-slider" id="art1-rho-slider" min="0.1" max="1.0" step="0.01" value="0.50" oninput="updateART1Simulation()">
+                        </div>
+                        
+                        <div class="control-label">Resultados do Agrupamento em Tempo Real:</div>
+                        <div class="art1-results-list" id="art1-results-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Tab switching logic
+    function switchTab(tabId, el) {
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.getElementById(tabId).classList.add('active');
+        el.classList.add('active');
+
+        // Specific widgets init if needed
+        if (tabId === 'tab-hopfield') {
+            initHopfield();
+        } else if (tabId === 'tab-kohonen') {
+            initKohonen();
+        } else if (tabId === 'tab-art') {
+            updateART1Simulation();
+        }
+    }
+
+    function toggleCheckbox(id) {
+        const el = document.getElementById(id);
+        el.classList.toggle('checked');
+    }
+
+    // ------------------ PERCEPTRON LOGIC ------------------
+    function calcPerceptron() {
+        const w0 = parseFloat(document.getElementById('p-w0').value);
+        const w1 = parseFloat(document.getElementById('p-w1').value);
+        const w2 = parseFloat(document.getElementById('p-w2').value);
+        const w3 = parseFloat(document.getElementById('p-w3').value);
+
+        document.getElementById('val-p-w0').innerText = w0.toFixed(2);
+        document.getElementById('val-p-w1').innerText = w1.toFixed(2);
+        document.getElementById('val-p-w2').innerText = w2.toFixed(2);
+        document.getElementById('val-p-w3').innerText = w3.toFixed(2);
+
+        const x1 = document.getElementById('chk-p-x1').classList.contains('checked') ? 1 : 0;
+        const x2 = document.getElementById('chk-p-x2').classList.contains('checked') ? 1 : 0;
+        const x3 = document.getElementById('chk-p-x3').classList.contains('checked') ? 1 : 0;
+
+        const v = w0 + (w1 * x1) + (w2 * x2) + (w3 * x3);
+        const outDiv = document.getElementById('perceptron-out');
+
+        if (v >= 0) {
+            outDiv.className = "badge-output positive";
+            outDiv.innerHTML = `Classe C2 (y = +1) <br><small style="font-size:11px;">Potencial de Ativação: ${v.toFixed(4)}</small>`;
+        } else {
+            outDiv.className = "badge-output negative";
+            outDiv.innerHTML = `Classe C1 (y = -1) <br><small style="font-size:11px;">Potencial de Ativação: ${v.toFixed(4)}</small>`;
+        }
+    }
+    // Initialize perceptron
+    calcPerceptron();
+
+    // ------------------ ADALINE LOGIC ------------------
+    let adalineInterval = null;
+    function runAdalineGradient(event) {
+        if (adalineInterval) clearInterval(adalineInterval);
+        
+        const plane = document.getElementById('adaline-plane');
+        const rect = plane.getBoundingClientRect();
+        const startX = event.clientX - rect.left;
+        const startY = event.clientY - rect.top;
+
+        const dot = document.getElementById('adaline-dot');
+        dot.style.display = 'block';
+        dot.style.left = `${startX}px`;
+        dot.style.top = `${startY}px`;
+
+        const targetX = rect.width / 2;
+        const targetY = rect.height / 2;
+
+        let curX = startX;
+        let curY = startY;
+        const lr = 0.05; // learning rate simulation step
+        let epochs = 0;
+
+        adalineInterval = setInterval(() => {
+            const dx = targetX - curX;
+            const dy = targetY - curY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if (dist < 1.5 || epochs > 200) {
+                clearInterval(adalineInterval);
+                document.getElementById('adaline-info').innerHTML = `<strong>Convergência Atingida!</strong><br>Épocas: ${epochs}<br>Pesos finais estabilizados no mínimo global.`;
+                return;
+            }
+
+            curX += dx * lr;
+            curY += dy * lr;
+            epochs++;
+
+            dot.style.left = `${curX}px`;
+            dot.style.top = `${curY}px`;
+
+            const currentMSE = (dist * dist / 1000).toFixed(6);
+            document.getElementById('adaline-info').innerHTML = `<strong>Descendo o gradiente...</strong><br>Época: ${epochs} | Erro Quadrático Médio: ${currentMSE}<br>Pesos: [w1: ${(curX/100).toFixed(4)}, w2: ${(curY/100).toFixed(4)}]`;
+        }, 30);
+    }
+
+    function resetAdaline() {
+        if (adalineInterval) clearInterval(adalineInterval);
+        document.getElementById('adaline-dot').style.display = 'none';
+        document.getElementById('adaline-info').innerText = 'Clique para gerar um vetor de pesos inicial!';
+    }
+
+    // ------------------ PMC / MLP LOGIC ------------------
+    let pmcTimeout = null;
+    function animatePMC(direction) {
+        const pulse = document.getElementById('pulse');
+        pulse.style.display = 'block';
+
+        if (direction === 'forward') {
+            // Animate input to hidden, then hidden to output
+            pulse.setAttribute('cx', '80');
+            pulse.setAttribute('cy', '140');
+            pulse.setAttribute('fill', 'var(--accent-blue)');
+
+            // Step 1: Input to hidden
+            let start = null;
+            function step1(timestamp) {
+                if (!start) start = timestamp;
+                let progress = (timestamp - start) / 500; // 500ms duration
+                if (progress > 1) progress = 1;
+
+                const cx = 80 + (200 - 80) * progress;
+                const cy = 140 + (140 - 140) * progress; // straight line for visualization
+                pulse.setAttribute('cx', cx);
+                pulse.setAttribute('cy', cy);
+
+                if (progress < 1) {
+                    requestAnimationFrame(step1);
+                } else {
+                    // Step 2: Hidden to output
+                    start = null;
+                    requestAnimationFrame(step2);
+                }
+            }
+            function step2(timestamp) {
+                if (!start) start = timestamp;
+                let progress = (timestamp - start) / 500;
+                if (progress > 1) progress = 1;
+
+                const cx = 200 + (320 - 200) * progress;
+                const cy = 140;
+                pulse.setAttribute('cx', cx);
+
+                if (progress < 1) {
+                    requestAnimationFrame(step2);
+                } else {
+                    pulse.style.display = 'none';
+                }
+            }
+            requestAnimationFrame(step1);
+        } else {
+            // Animate backward
+            pulse.setAttribute('cx', '320');
+            pulse.setAttribute('cy', '140');
+            pulse.setAttribute('fill', 'var(--accent-red)');
+
+            let start = null;
+            function step1Back(timestamp) {
+                if (!start) start = timestamp;
+                let progress = (timestamp - start) / 500;
+                if (progress > 1) progress = 1;
+
+                const cx = 320 - (320 - 200) * progress;
+                pulse.setAttribute('cx', cx);
+
+                if (progress < 1) {
+                    requestAnimationFrame(step1Back);
+                } else {
+                    start = null;
+                    requestAnimationFrame(step2Back);
+                }
+            }
+            function step2Back(timestamp) {
+                if (!start) start = timestamp;
+                let progress = (timestamp - start) / 500;
+                if (progress > 1) progress = 1;
+
+                const cx = 200 - (200 - 80) * progress;
+                pulse.setAttribute('cx', cx);
+
+                if (progress < 1) {
+                    requestAnimationFrame(step2Back);
+                } else {
+                    pulse.style.display = 'none';
+                }
+            }
+            requestAnimationFrame(step1Back);
+        }
+    }
+
+    // ------------------ RBF LOGIC ------------------
+    function updateRBF(event) {
+        const plane = document.getElementById('rbf-plane');
+        const rect = plane.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        // Centers
+        const c1 = { x: rect.width * 0.3, y: rect.height * 0.4 };
+        const c2 = { x: rect.width * 0.7, y: rect.height * 0.7 };
+
+        // Distances
+        const d1 = Math.sqrt((mouseX - c1.x)**2 + (mouseY - c1.y)**2);
+        const d2 = Math.sqrt((mouseX - c2.x)**2 + (mouseY - c2.y)**2);
+
+        // Gaussian sigma
+        const sigma1 = 80;
+        const sigma2 = 90;
+
+        // Activations
+        const act1 = Math.exp(-(d1**2) / (2 * sigma1**2));
+        const act2 = Math.exp(-(d2**2) / (2 * sigma2**2));
+
+        document.getElementById('rbf-act-1').innerText = `${(act1 * 100).toFixed(1)}%`;
+        document.getElementById('rbf-act-2').innerText = `${(act2 * 100).toFixed(1)}%`;
+
+        document.getElementById('rbf-bar-1').style.width = `${act1 * 100}%`;
+        document.getElementById('rbf-bar-2').style.width = `${act2 * 100}%`;
+    }
+
+    // ------------------ HOPFIELD LOGIC ------------------
+    const HOPFIELD_PATTERNS = {
+        1: [
+            -1, -1, 1, 1, -1,
+            -1, 1, 1, 1, -1,
+            -1, -1, 1, 1, -1,
+            -1, -1, 1, 1, -1,
+            -1, -1, 1, 1, -1,
+            -1, -1, 1, 1, -1,
+            -1, -1, 1, 1, -1,
+            -1, -1, 1, 1, -1,
+            -1, -1, 1, 1, -1
+        ],
+        2: [
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1,
+            -1, -1, -1, 1, 1,
+            -1, -1, -1, 1, 1,
+            1, 1, 1, 1, 1,
+            1, 1, -1, -1, -1,
+            1, 1, -1, -1, -1,
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1
+        ],
+        3: [
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1,
+            -1, -1, -1, 1, 1,
+            -1, -1, -1, 1, 1,
+            1, 1, 1, 1, 1,
+            -1, -1, -1, 1, 1,
+            -1, -1, -1, 1, 1,
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1
+        ],
+        4: [
+            1, 1, -1, 1, 1,
+            1, 1, -1, 1, 1,
+            1, 1, -1, 1, 1,
+            1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1,
+            -1, -1, -1, 1, 1,
+            -1, -1, -1, 1, 1,
+            -1, -1, -1, 1, 1,
+            -1, -1, -1, 1, 1
+        ]
+    };
+
+    let hopfieldGrid = Array(45).fill(-1);
+    let hopfieldWeights = Array(45).fill(0).map(() => Array(45).fill(0));
+
+    function initHopfield() {
+        // Train weight matrix on page load / tab view
+        const numP = 4;
+        const P = [HOPFIELD_PATTERNS[1], HOPFIELD_PATTERNS[2], HOPFIELD_PATTERNS[3], HOPFIELD_PATTERNS[4]];
+        
+        for (let i = 0; i < 45; i++) {
+            for (let j = 0; j < 45; j++) {
+                if (i === j) {
+                    hopfieldWeights[i][j] = 0;
+                } else {
+                    let sum = 0;
+                    for (let p = 0; p < numP; p++) {
+                        sum += P[p][i] * P[p][j];
+                    }
+                    hopfieldWeights[i][j] = sum / 45;
+                }
+            }
+        }
+
+        // Render grid cells
+        const gridDiv = document.getElementById('hopfield-grid');
+        gridDiv.innerHTML = '';
+        for (let i = 0; i < 45; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'hopfield-cell';
+            cell.id = `h-cell-${i}`;
+            cell.onclick = () => toggleHopfieldCell(i);
+            gridDiv.appendChild(cell);
+        }
+        drawHopfieldGrid();
+    }
+
+    function toggleHopfieldCell(idx) {
+        hopfieldGrid[idx] = -hopfieldGrid[idx];
+        drawHopfieldGrid();
+    }
+
+    function drawHopfieldGrid() {
+        for (let i = 0; i < 45; i++) {
+            const cell = document.getElementById(`h-cell-${i}`);
+            if (cell) {
+                if (hopfieldGrid[i] === 1) {
+                    cell.classList.add('active');
+                } else {
+                    cell.classList.remove('active');
+                }
+            }
+        }
+    }
+
+    function loadHopfieldDigit(num) {
+        hopfieldGrid = [...HOPFIELD_PATTERNS[num]];
+        drawHopfieldGrid();
+        document.getElementById('hopfield-status').innerText = `Carregado: Dígito ${num}`;
+    }
+
+    function addHopfieldNoise() {
+        const nFlips = 9; // ~20%
+        let indices = Array.from({length: 45}, (_, i) => i);
+        // Shuffle
+        indices.sort(() => Math.random() - 0.5);
+        for (let i = 0; i < nFlips; i++) {
+            const idx = indices[i];
+            hopfieldGrid[idx] = -hopfieldGrid[idx];
+        }
+        drawHopfieldGrid();
+        document.getElementById('hopfield-status').innerText = `Injetado 20% de ruído (9 flips aleatórios)`;
+    }
+
+    async function recallHopfield() {
+        document.getElementById('hopfield-status').innerText = `Recuperando assincronamente...`;
+        
+        let state = [...hopfieldGrid];
+        let changed = true;
+        let iter = 0;
+
+        // We run asynchronous epochs
+        while (changed && iter < 10) {
+            changed = false;
+            let indices = Array.from({length: 45}, (_, i) => i);
+            indices.sort(() => Math.random() - 0.5); // Random ordering of updates per epoch
+
+            for (let idx of indices) {
+                let act = 0;
+                for (let j = 0; j < 45; j++) {
+                    act += hopfieldWeights[idx][j] * state[j];
+                }
+                const new_val = act >= 0 ? 1 : -1;
+                if (state[idx] !== new_val) {
+                    state[idx] = new_val;
+                    changed = true;
+                    hopfieldGrid[idx] = new_val;
+                    drawHopfieldGrid();
+                    // Pause for a tiny moment to show micro-animations of convergence
+                    await new Promise(r => setTimeout(r, 15));
+                }
+            }
+            iter++;
+        }
+
+        // Compare against original digits to print matching digit
+        let bestMatch = -1;
+        for (let k = 1; k <= 4; k++) {
+            let match = true;
+            for (let i = 0; i < 45; i++) {
+                if (state[i] !== HOPFIELD_PATTERNS[k][i]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                bestMatch = k;
+                break;
+            }
+        }
+
+        if (bestMatch !== -1) {
+            document.getElementById('hopfield-status').innerHTML = `<strong>Padrão Recuperado com Sucesso: Dígito ${bestMatch}!</strong>`;
+        } else {
+            document.getElementById('hopfield-status').innerHTML = `<span style="color:var(--accent-orange);">Convergência para Estado Espúrio ou Inverso.</span>`;
+        }
+    }
+
+    // ------------------ KOHONEN LOGIC ------------------
+    const SOM_GRID_MAP = {
+        // Neuron index: [Class, distribution counts, weights [x1, x2, x3]]
+        0: ['A', [12, 0, 0], [0.12, 0.45, 0.78]],
+        1: ['A', [8, 0, 0], [0.15, 0.42, 0.75]],
+        2: ['B', [0, 15, 0], [0.55, 0.22, 0.12]],
+        3: ['B', [0, 10, 0], [0.52, 0.20, 0.15]],
+        4: ['A', [0, 0, 0], [0.18, 0.38, 0.70]],
+        5: ['Unused', [0, 0, 0], [0.5, 0.5, 0.5]],
+        6: ['B', [0, 8, 0], [0.58, 0.25, 0.10]],
+        7: ['C', [0, 0, 20], [0.82, 0.65, 0.45]],
+        8: ['B', [0, 7, 0], [0.60, 0.28, 0.08]],
+        9: ['Unused', [0, 0, 0], [0.5, 0.5, 0.5]],
+        10: ['C', [0, 0, 18], [0.80, 0.68, 0.48]],
+        11: ['C', [0, 0, 12], [0.85, 0.62, 0.42]],
+        12: ['B', [0, 0, 0], [0.62, 0.30, 0.05]],
+        13: ['C', [0, 0, 10], [0.78, 0.70, 0.50]],
+        14: ['C', [0, 0, 8], [0.88, 0.60, 0.38]],
+        15: ['C', [0, 0, 2], [0.90, 0.58, 0.35]],
+    };
+
+    function initKohonen() {
+        const gridDiv = document.getElementById('som-grid');
+        gridDiv.innerHTML = '';
+        for (let i = 0; i < 16; i++) {
+            const neuron = document.createElement('div');
+            neuron.className = 'som-neuron';
+            neuron.id = `som-neuron-${i}`;
+            
+            const idxSpan = document.createElement('span');
+            idxSpan.className = 'som-neuron-idx';
+            idxSpan.innerText = `N${i+1}`;
+            
+            const classSpan = document.createElement('span');
+            classSpan.className = `som-neuron-class som-class-${SOM_GRID_MAP[i][0]}`;
+            classSpan.innerText = SOM_GRID_MAP[i][0];
+
+            neuron.appendChild(idxSpan);
+            neuron.appendChild(classSpan);
+            neuron.onclick = () => showNeuronInfo(i);
+            gridDiv.appendChild(neuron);
+        }
+    }
+
+    function showNeuronInfo(idx) {
+        const info = SOM_GRID_MAP[idx];
+        const infoDiv = document.getElementById('som-info');
+        infoDiv.innerHTML = `<strong>Neurônio N${idx+1}</strong><br>
+                            Classe Majoritária: <strong>${info[0]}</strong><br>
+                            Vetor de Pesos Final (W): <strong>[${info[2].join(', ')}]</strong><br>
+                            Distribuição de Vitórias: A: ${info[1][0]} | B: ${info[1][1]} | C: ${info[1][2]}`;
+    }
+
+    function highlightSOMClass(cls) {
+        for (let i = 0; i < 16; i++) {
+            const neuron = document.getElementById(`som-neuron-${i}`);
+            if (neuron) {
+                if (SOM_GRID_MAP[i][0] === cls) {
+                    neuron.classList.add('active');
+                } else {
+                    neuron.classList.remove('active');
+                }
+            }
+        }
+    }
+
+    // ------------------ LVQ1 LOGIC ------------------
+    function testLVQDays() {
+        const status = document.getElementById('lvq-status');
+        status.innerHTML = `<strong>Classificações de Teste:</strong><br>
+                            Dia 1: [2.98, 1.56, 4.83, 1.43, 4.19, 6.97] &rarr; <strong>Classe 4 (Industrial)</strong><br>
+                            Dia 2: [1.55, 2.26, 1.31, 2.58, 1.75, 5.09] &rarr; <strong>Classe 3 (Pico Fim)</strong><br>
+                            Dia 3: [1.22, 0.24, 1.35, 5.41, 3.20, 2.56] &rarr; <strong>Classe 2 (Pico Meio)</strong><br>
+                            Dia 4: [2.58, 1.51, 2.11, 1.28, 2.34, 1.86] &rarr; <strong>Classe 1 (Baixo Regular)</strong><br>
+                            Dia 5: [2.41, 1.48, 1.89, 1.30, 2.45, 1.78] &rarr; <strong>Classe 1 (Baixo Regular)</strong><br>
+                            Dia 6: [1.06, 0.22, 1.28, 5.47, 3.21, 2.48] &rarr; <strong>Classe 2 (Pico Meio)</strong><br>
+                            Dia 7: [1.52, 2.42, 1.13, 2.53, 1.75, 5.26] &rarr; <strong>Classe 3 (Pico Fim)</strong><br>
+                            Dia 8: [3.05, 1.62, 4.77, 1.36, 4.29, 6.98] &rarr; <strong>Classe 4 (Industrial)</strong>`;
+    }
+
+    // ------------------ ART1 LOGIC ------------------
+    const ART1_SITUATIONS = [
+        [0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1], // Situação 1
+        [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0], // Situação 2
+        [1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1], // Situação 3
+        [1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0], // Situação 4
+        [0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1], // Situação 5
+        [1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1], // Situação 6
+        [1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0], // Situação 7
+        [1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1], // Situação 8 (identica à 3)
+        [0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1], // Situação 9
+        [0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1]  // Situação 10 (identica à 5)
+    ];
+
+    function updateART1Simulation() {
+        const rho = parseFloat(document.getElementById('art1-rho-slider').value);
+        document.getElementById('art1-rho-val').innerText = rho.toFixed(2);
+        
+        // Run ART-1 Clustering logic
+        const result = runART1JS(rho);
+        
+        // Render results
+        const container = document.getElementById('art1-results-container');
+        container.innerHTML = '';
+        
+        // Group by label
+        const groups = {};
+        result.classifications.forEach((lbl, idx) => {
+            if (!groups[lbl]) groups[lbl] = [];
+            groups[lbl].push(`Situação ${idx + 1}`);
+        });
+
+        Object.keys(groups).forEach(lbl => {
+            const classIdx = parseInt(lbl);
+            const template = result.W_td[classIdx];
+            
+            const card = document.createElement('div');
+            card.className = 'art1-class-item';
+            
+            const header = document.createElement('div');
+            header.className = 'art1-item-header';
+            header.innerText = `Classe ${classIdx + 1}`;
+            
+            const members = document.createElement('div');
+            members.className = 'art1-item-members';
+            members.innerText = `Situações: ${groups[lbl].join(', ')}`;
+            
+            const templateDiv = document.createElement('div');
+            templateDiv.className = 'art1-item-template';
+            templateDiv.innerText = `Template T: [ ${template.join(' ')} ]`;
+            
+            card.appendChild(header);
+            card.appendChild(members);
+            card.appendChild(templateDiv);
+            container.appendChild(card);
+        });
+    }
+
+    function runART1JS(rho, L = 2.0) {
+        let W_bu = [];
+        let W_td = [];
+        const classifications = [];
+        
+        function addCat(x) {
+            let t_new = [...x];
+            let norm_x = x.reduce((a, b) => a + b, 0);
+            let b_new = x.map(val => (L * val) / (L - 1.0 + norm_x));
+            W_td.push(t_new);
+            W_bu.push(b_new);
+            return W_td.length - 1;
+        }
+
+        for (let idx = 0; idx < ART1_SITUATIONS.length; idx++) {
+            let x = ART1_SITUATIONS[idx];
+            let norm_x = x.reduce((a, b) => a + b, 0);
+            let y_uncommitted = (L * norm_x) / (L - 1.0 + 16.0);
+            
+            let num_classes = W_bu.length;
+            let activations = W_bu.map(b => b.reduce((sum, b_val, i) => sum + b_val * x[i], 0));
+            let active = Array(num_classes).fill(true);
+            let winner_idx = -1;
+            
+            while (true) {
+                let candidate_idx = -1;
+                let candidate_act = -1.0;
+                
+                for (let j = 0; j < num_classes; j++) {
+                    if (active[j] && activations[j] > candidate_act) {
+                        candidate_act = activations[j];
+                        candidate_idx = j;
+                    }
+                }
+                
+                if (candidate_idx !== -1 && candidate_act >= y_uncommitted) {
+                    let t_j = W_td[candidate_idx];
+                    let intersection = x.map((val, i) => (val === 1 && t_j[i] === 1) ? 1 : 0);
+                    let norm_intersection = intersection.reduce((a, b) => a + b, 0);
+                    
+                    if (norm_intersection / norm_x >= rho) {
+                        winner_idx = candidate_idx;
+                        W_td[winner_idx] = intersection;
+                        W_bu[winner_idx] = intersection.map(val => (L * val) / (L - 1.0 + norm_intersection));
+                        break;
+                    } else {
+                        active[candidate_idx] = false;
+                    }
+                } else {
+                    winner_idx = addCat(x);
+                    break;
+                }
+            }
+            classifications.push(winner_idx);
+        }
+        return { classifications, W_td, W_bu };
+    }
+</script>
+</body>
+</html>
